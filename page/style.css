@@ -1,0 +1,77 @@
+#map {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Style for the floating sidebar */
+#sidebar {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 20px;
+    box-sizing: border-box;
+    background-color: rgba(245, 245, 245, 0.9);
+    border-radius: 10px;
+    z-index: 1;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-size: 14px;
+}
+
+/* Style for the color indicator */
+#indicator {
+    bottom: 10px;
+    width: 100%;
+    position: absolute;
+    font-size: 12px;
+    line-height: 20px;
+}
+
+#indicatorbg {
+    background-color: rgba(245, 245, 245, 0.8);
+    width: 200px;
+    height: 50px;
+    border-radius: 15px;
+    margin: 0 auto;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#indicatorbg .range {
+    display: flex;
+    justify-content: space-between;
+}
+
+#colorIndicator {
+    margin: 0 auto;
+    height: 20px;
+    width: 200px;
+    display: flex;
+    justify-content: space-between;
+    z-index: 1;
+}
+
+.colorBox {
+    flex: 1;
+    height: 20px;
+}
+#colorIndicator .colorBox:first-child {
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+#colorIndicator .colorBox:last-child {
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+#colorIndicator span {
+    text-align: center;
+    font-size: 12px;
+}
+html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
