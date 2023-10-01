@@ -207,6 +207,9 @@ const parameterData = [
                     let opacity = 1;
                     if (range) {
                         const value = m.value;
+                        if (value < 0) {
+                            return;
+                        }
                         const normalizedValue = (value - range[0]) / (range[1] - range[0]);
                         const level = Math.round(normalizedValue * 4);
                         opacity = 0.2 + (0.8 * level / 4);
