@@ -38,7 +38,7 @@ const parameterData = [
     function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
             center: { lat: 0, lng: 0 },
-            zoom: 6
+            zoom: 4
         });
         google.maps.event.addListener(map, 'click', function() {
             infoWindow.close();
@@ -49,7 +49,7 @@ const parameterData = [
 
         markerCluster = new MarkerClusterer(map, markers, {
             imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
-            maxZoom: 6
+            maxZoom: 8
         });
 
         if (navigator.geolocation) {
