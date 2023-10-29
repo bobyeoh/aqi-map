@@ -34,7 +34,8 @@ const parameterData = [
     let markerCluster;
     let geocoder;
     let infoWindow;
-
+    let compareData = {};
+    let currentResult = [];
     function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
             center: { lat: 0, lng: 0 },
@@ -114,6 +115,9 @@ const parameterData = [
     }
     function fetchTimeSeriesData(location) {
         document.getElementById("timeSeriesChart").innerHTML = 'Loading...';
+        const checkbox = document.getElementById("compareCheckbox");
+        checkbox.disabled=true;
+        checkbox.checked=false;
         const parameter = document.getElementById('parameterSelect').value;
         const apiUrl = `/v1/measurements?limit=100&page=1&offset=0&sort=desc&parameter=${parameter}&location=${location}&order_by=datetime`;
 
@@ -122,6 +126,13 @@ const parameterData = [
             .then(data => {
                 document.getElementById("timeSeriesChart").innerHTML = '';
                 drawTimeSeriesChart(data.results);
+                currentResult = data.results;
+                checkbox.disabled = false;
+                if (compareData.hasOwnProperty(measurement.location+parameter)) {
+                    checkbox.checked = true;
+                } else {
+                    checkbox.checked = false;
+                }
             }).catch(() => {
                 document.getElementById("timeSeriesChart").innerHTML = `<span>Failed to retrieve data. <button onclick="fetchTimeSeriesData('`+location+`')">Reload</button></span>`;
             });
@@ -189,7 +200,18 @@ const parameterData = [
             img.src = '/dot.png';
         });
     }
-
+    function addToCompare(key) {
+        const checkbox = document.getElementById("compareCheckbox");
+        if (compareData.hasOwnProperty(key)) {
+            delete compareData[key];
+            checkbox.checked = false;
+        } else {
+            compareData[key] = currentResult;
+            checkbox.checked = true;
+        }
+    
+        console.log(compareData);
+    }
     function fetchDataByPage(parameter, page, range) {
         const apiUrl = `/v1/latest?limit=${LIMIT}&page=${page}&parameter=${parameter === "" ? "pm10" : parameter}`;
 
@@ -230,12 +252,14 @@ const parameterData = [
                             },
                             optimized: true
                         });
+                        const parameter = document.getElementById('parameterSelect').value;
                         const infoContent = `
                         <div style="display: flex; flex-wrap: wrap; line-height:20px">
                             <div style="flex: 1 50%;"><strong>City:</strong> ${measurement.city}</div>
                             <div style="flex: 1 50%;"><strong>Location:</strong> ${measurement.location}</div>
                             <div style="flex: 1 50%;"><strong>Value:</strong> ${m.value} ${m.unit}</div>
                             <div style="flex: 1 50%;"><strong>Last Updated:</strong> ${new Date(m.lastUpdated).toLocaleString()}</div>
+                            <div style="flex: 1 50%;"><strong>Add to compare</strong> <input type="checkbox" id="compareCheckbox" onclick="addToCompare('${measurement.location+parameter}')" ${currentResult && compareData.hasOwnProperty(measurement.location+parameter) ? '': 'disabled'} /></div>
                         </div>
                         <div id="timeSeriesChart" style="width: 500px; height: 320px;text-align:center;display: flex;align-items: center;justify-content: center;"></div>
                         `;
