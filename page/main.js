@@ -100,6 +100,8 @@ const parameterData = [
     const LIMIT = 1000;
 
     function fetchDataAndDisplay() {
+        compareData={};
+        currentResult=[];
         clearMarkers();
         currentPage = 1;
         const selectedParameter = document.getElementById('parameterSelect').value;
