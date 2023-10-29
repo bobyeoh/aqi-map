@@ -114,7 +114,7 @@ const parameterData = [
         
     }
     function fetchTimeSeriesData(location) {
-        document.getElementById("timeSeriesChart").innerHTML = 'Loading...';
+        document.getElementById("LineChart").innerHTML = 'Loading...';
         const checkbox = document.getElementById("compareCheckbox");
         checkbox.disabled=true;
         checkbox.checked=false;
@@ -124,23 +124,26 @@ const parameterData = [
         fetch(apiUrl)
             .then(response => response.json())
             .then(data => {
-                document.getElementById("timeSeriesChart").innerHTML = '';
+                openChart('LineChart');
+                document.getElementById("LineChart").innerHTML = '';
                 drawTimeSeriesChart(data.results);
                 currentResult = data.results;
                 checkbox.disabled = false;
-                if (compareData.hasOwnProperty(measurement.location+parameter)) {
+                if (compareData.hasOwnProperty(location+'_'+parameter)) {
                     checkbox.checked = true;
                 } else {
                     checkbox.checked = false;
                 }
-            }).catch(() => {
-                document.getElementById("timeSeriesChart").innerHTML = `<span>Failed to retrieve data. <button onclick="fetchTimeSeriesData('`+location+`')">Reload</button></span>`;
+            }).catch((e) => {
+                console.log(e);
+                document.getElementById("LineChart").innerHTML = `<span>Failed to retrieve data. <button onclick="fetchTimeSeriesData('`+location+`')">Reload</button></span>`;
             });
     }
     function drawTimeSeriesChart(data) {
-        const svg = d3.select("#timeSeriesChart").append("svg")
-            .attr("width", 500)
-            .attr("height", 300);
+        document.getElementById("LineChart").innerHTML="";
+        const svg = d3.select("#LineChart").append("svg")
+            .attr("width", 1000)
+            .attr("height", 500);
 
         const margin = {top: 20, right: 20, bottom: 30, left: 50};
         const width = +svg.attr("width") - margin.left - margin.right;
@@ -182,6 +185,88 @@ const parameterData = [
                 .x(d => x(new Date(d.date.utc)))
                 .y(d => y(d.value)));
     }
+
+
+    function drawBarChart(data) {
+        document.getElementById("BarChart").innerHTML = "";
+        const svg = d3.select("#BarChart").append("svg")
+            .attr("width", 1000)
+            .attr("height", 500);
+    
+        const margin = { top: 20, right: 20, bottom: 70, left: 50 };
+        const width = +svg.attr("width") - margin.left - margin.right;
+        const height = +svg.attr("height") - margin.top - margin.bottom;
+    
+        const x = d3.scaleBand()
+            .rangeRound([0, width])
+            .padding(0.1);
+    
+        const y = d3.scaleLinear()
+            .rangeRound([height, 0]);
+    
+        const g = svg.append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+    
+        x.domain(data.map(d => new Date(d.date.utc)));
+        y.domain([0, d3.max(data, d => d.value)]);
+    
+        const filteredData = data.filter((_, i) => i % 5 === 0);
+    
+        const xAxis = g.append("g")
+            .attr("class", "axis axis--x")
+            .attr("transform", `translate(0,${height})`)
+            .call(d3.axisBottom(x)
+                .tickValues(filteredData.map(d => new Date(d.date.utc)))
+                .tickFormat(d3.timeFormat("%b %d %H:%M")));
+    
+        xAxis.selectAll("text")
+            .attr("y", 0)
+            .attr("x", -10)
+            .attr("dy", ".35em")
+            .attr("transform", "rotate(-45)")
+            .style("text-anchor", "end");
+    
+        g.append("g")
+            .attr("class", "axis axis--y")
+            .call(d3.axisLeft(y).ticks(10))
+            .append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 6)
+            .attr("dy", "0.71em")
+            .attr("text-anchor", "end")
+            .attr("fill", "#000")
+            .text("Value (µg/m³)");
+    
+        const bars = g.selectAll(".bar")
+            .data(data)
+            .enter().append("rect")
+            .attr("class", "bar")
+            .attr("x", d => x(new Date(d.date.utc)))
+            .attr("y", d => y(d.value))
+            .attr("width", x.bandwidth())
+            .attr("height", d => height - y(d.value))
+            .attr("fill", "steelblue");
+    
+        const brushed = () => {
+            const s = d3.event.selection || x.range();
+            x.domain(s.map(x.invert, x));
+            bars.attr("x", d => x(new Date(d.date.utc))).attr("width", x.bandwidth());
+            xAxis.call(d3.axisBottom(x).tickFormat(d3.timeFormat("%b %d %H:%M")));
+        }
+    
+        const brush = d3.brushX()
+            .extent([[0, 0], [width, height]])
+            .on("end", brushed);
+    
+        const brushG = g.append("g")
+            .attr("class", "brush")
+            .call(brush)
+            .call(brush.move, x.range());
+        brushG.select(".selection")
+            .attr("fill", "white");
+    }
+    
+    
     function createDotWithOpacity(opacity) {
         return new Promise((resolve, reject) => {
             const canvas = document.createElement('canvas');
@@ -202,6 +287,7 @@ const parameterData = [
     }
     function addToCompare(key) {
         const checkbox = document.getElementById("compareCheckbox");
+        const compareButton = document.getElementById("compareButton");
         if (compareData.hasOwnProperty(key)) {
             delete compareData[key];
             checkbox.checked = false;
@@ -209,8 +295,110 @@ const parameterData = [
             compareData[key] = currentResult;
             checkbox.checked = true;
         }
-    
+        if (Object.keys(compareData).length){
+            compareButton.style.display="block";
+            compareButton.innerText="Compare "+Object.keys(compareData).length+" Locations"
+        } else {
+            compareButton.style.display="none";
+        }
         console.log(compareData);
+    }
+    function showPopup() {
+        const popup = document.getElementById("popup");
+        const data = compareData;
+        const margin = { top: 20, right: 20, bottom: 30, left: 50 },
+        width = 960 - margin.left - margin.right,
+        height = 500 - margin.top - margin.bottom;
+        document.getElementById("chart-container").innerHTML="";
+        const svg = d3.select("#chart-container").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+    
+        const x = d3.scaleUtc().range([0, width]);
+        const y = d3.scaleLinear().range([height, 0]);
+    
+        const locations = Object.keys(data);
+        const color = d3.scaleOrdinal(d3.schemeCategory10).domain(locations);
+    
+        // 定义线条生成器
+        const line = d3.line()
+            .x(d => x(new Date(d.date.utc)))
+            .y(d => y(d.value));
+    
+        // 定义时间和值的域
+        let allValues = [];
+        for (let location in data) {
+            allValues = allValues.concat(data[location]);
+        }
+    
+        x.domain(d3.extent(allValues, d => new Date(d.date.utc)));
+        y.domain([0, d3.max(allValues, d => d.value)]);
+    
+        // 添加X轴
+        svg.append("g")
+            .attr("transform", `translate(0,${height})`)
+            .call(d3.axisBottom(x));
+    
+        // 添加Y轴
+        svg.append("g")
+            .call(d3.axisLeft(y));
+    
+        // 绘制线条
+        locations.forEach(location => {
+            svg.append("path")
+                .data([data[location]])
+                .attr("fill", "none")
+                .attr("stroke", color(location))
+                .attr("stroke-width", 1.5)
+                .attr("d", line);
+        });
+    
+        // 添加图例
+        const legend = svg.selectAll(".legend")
+            .data(locations)
+            .enter().append("g")
+            .attr("class", "legend")
+            .attr("transform", (d, i) => `translate(0,${i * 20})`);
+    
+        legend.append("rect")
+            .attr("x", width - 18)
+            .attr("width", 18)
+            .attr("height", 18)
+            .style("fill", color);
+    
+        legend.append("text")
+            .attr("x", width - 24)
+            .attr("y", 9)
+            .attr("dy", ".35em")
+            .style("text-anchor", "end")
+            .text(d => d);
+    
+        popup.style.display = "block";
+    }
+    function openChart(chartName) {
+        var i;
+        var x = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < x.length; i++) {
+            x[i].style.display = "none";
+        }
+        document.getElementById(chartName).style.display = "block";
+        if(chartName === 'LineChart') {
+            // Call your line chart drawing function here
+            drawTimeSeriesChart(currentResult);
+        } else if(chartName === 'BarChart') {
+            // Call your bar chart drawing function here
+            drawBarChart(currentResult);
+        }
+    }
+    function togglePopup() {
+        var popup = document.getElementById('popup');
+        if (popup.style.display === "none" || popup.style.display === "") {
+            popup.style.display = "block";
+        } else {
+            popup.style.display = "none";
+        }
     }
     function fetchDataByPage(parameter, page, range) {
         const apiUrl = `/v1/latest?limit=${LIMIT}&page=${page}&parameter=${parameter === "" ? "pm10" : parameter}`;
@@ -254,14 +442,20 @@ const parameterData = [
                         });
                         const parameter = document.getElementById('parameterSelect').value;
                         const infoContent = `
-                        <div style="display: flex; flex-wrap: wrap; line-height:20px">
+                        <div style="display: flex; flex-wrap: wrap; line-height:20px;width:1100px">
                             <div style="flex: 1 50%;"><strong>City:</strong> ${measurement.city}</div>
                             <div style="flex: 1 50%;"><strong>Location:</strong> ${measurement.location}</div>
                             <div style="flex: 1 50%;"><strong>Value:</strong> ${m.value} ${m.unit}</div>
                             <div style="flex: 1 50%;"><strong>Last Updated:</strong> ${new Date(m.lastUpdated).toLocaleString()}</div>
-                            <div style="flex: 1 50%;"><strong>Add to compare</strong> <input type="checkbox" id="compareCheckbox" onclick="addToCompare('${measurement.location+parameter}')" ${currentResult && compareData.hasOwnProperty(measurement.location+parameter) ? '': 'disabled'} /></div>
+                            <div style="flex: 1 50%;"><strong>Add to Compare</strong> <input type="checkbox" id="compareCheckbox" onclick="addToCompare('${measurement.location+'_'+parameter}')" ${currentResult && compareData.hasOwnProperty(measurement.location+'_'+parameter) ? '': 'disabled'} /></div>
                         </div>
-                        <div id="timeSeriesChart" style="width: 500px; height: 320px;text-align:center;display: flex;align-items: center;justify-content: center;"></div>
+                        <div class="tabs">
+                            <button class="tablink" onclick="openChart('LineChart')">Line Chart</button>
+                            <button class="tablink" onclick="openChart('BarChart')">Bar Chart</button>
+                        </div>
+
+                        <div id="LineChart" class="tabcontent" style="width: 900px; height: 520px;display:block"></div>
+                        <div id="BarChart" class="tabcontent" style="width: 900px; height: 520px;"></div>                    
                         `;
                         marker.addListener('click', function() {
                             infoWindow.setContent(infoContent);

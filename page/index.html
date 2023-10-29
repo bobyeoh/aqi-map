@@ -16,7 +16,10 @@
         <br />
         <select id="parameterSelect" onchange="fetchDataAndDisplay()">
         </select>
+        <button id="compareButton" onclick="showPopup()">Compare 10 locations</button>
     </div>
+
+
     <div id="indicator">
         <div id="indicatorbg">
             <span id="indicatorText"></span>
@@ -35,6 +38,14 @@
         </div>
     </div>
 
+    <div id="popup" class="popup">
+        <div class="popup-content">
+            <span class="close-btn" onclick="togglePopup()">&times;</span>
+            <h2>Compare Locations</h2>
+            <div id="chart-container"></div>
+        </div>
+    </div>
+    
 
     <script src="/main.js"></script>
 
