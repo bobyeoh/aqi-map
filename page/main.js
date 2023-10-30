@@ -123,7 +123,7 @@ const parameterData = [
         const parameter = document.getElementById('parameterSelect').value;
         const apiUrl = `/v1/measurements?limit=100&page=1&offset=0&sort=desc&parameter=${parameter}&location=${location}&order_by=datetime`;
 
-        fetch(apiUrl)
+        fetch(apiUrl, { headers: { 'Cache-Control': 'no-cache' } })
             .then(response => response.json())
             .then(data => {
                 openChart('LineChart');
@@ -316,7 +316,9 @@ const parameterData = [
         compareData = {};
         compareButton.style.display = "none";
         clearButton.style.display = "none";
-        compareCheckbox.checked = false;
+        if (compareCheckbox) {
+            compareCheckbox.checked = false;
+        }
     }
     function showPopup() {
         const popup = document.getElementById("popup");
