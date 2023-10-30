@@ -92,7 +92,7 @@ body {
     background-color: #357ae8;
 }
 #clearButton {
-    display: block;
+    display: none;
     width: 100%;
     padding: 10px;
     margin-top: 10px;
