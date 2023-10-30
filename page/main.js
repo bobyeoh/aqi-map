@@ -311,9 +311,12 @@ const parameterData = [
     function clearLocations() {
         const compareButton = document.getElementById("compareButton");
         const clearButton = document.getElementById("clearButton");
+        const compareCheckbox = document.getElementById("compareCheckbox");
+        
         compareData = {};
         compareButton.style.display = "none";
         clearButton.style.display = "none";
+        compareCheckbox.checked = false;
     }
     function showPopup() {
         const popup = document.getElementById("popup");
