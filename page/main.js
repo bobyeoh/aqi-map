@@ -290,6 +290,7 @@ const parameterData = [
     function addToCompare(key) {
         const checkbox = document.getElementById("compareCheckbox");
         const compareButton = document.getElementById("compareButton");
+        const clearButton = document.getElementById("clearButton");
         if (compareData.hasOwnProperty(key)) {
             delete compareData[key];
             checkbox.checked = false;
@@ -299,11 +300,20 @@ const parameterData = [
         }
         if (Object.keys(compareData).length){
             compareButton.style.display="block";
+            clearButton.style.display="block";
             compareButton.innerText="Compare "+Object.keys(compareData).length+" Locations"
         } else {
             compareButton.style.display="none";
+            clearButton.style.display="none";
         }
         console.log(compareData);
+    }
+    function clear() {
+        const compareButton = document.getElementById("compareButton");
+        const clearButton = document.getElementById("clearButton");
+        compareData = {};
+        compareButton.style.display = "none";
+        clearButton.style.display = "none";
     }
     function showPopup() {
         const popup = document.getElementById("popup");
