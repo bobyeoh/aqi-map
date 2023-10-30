@@ -308,7 +308,7 @@ const parameterData = [
         }
         console.log(compareData);
     }
-    function clear() {
+    function clearLocations() {
         const compareButton = document.getElementById("compareButton");
         const clearButton = document.getElementById("clearButton");
         compareData = {};
