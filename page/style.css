@@ -91,6 +91,21 @@ body {
 #compareButton:hover {
     background-color: #357ae8;
 }
+#clearButton {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background-color: #ff4b4b;  /* 红色背景 */
+    color: white;  /* 白色文本 */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#clearButton:hover {
+    background-color: #e63939;  /* 深红色背景在悬停时 */
+}
 
 .popup {
     display: none; /* Hidden by default */
