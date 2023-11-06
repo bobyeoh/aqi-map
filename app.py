@@ -15,11 +15,11 @@ def catch_all(path):
     print(forward_url)
     print(query_params)
     # Set the request headers
-    headers = {'accept': 'application/json'}
+    headers = {'accept': 'application/json', 'Expires': '0', 'Pragma': 'no-cache', 'Cache-Control': 'no-cache, no-store, must-revalidate'}
 
     # Forward the request based on the method
     if request.method == 'GET':
-        response = requests.get(forward_url, headers=headers, params=query_params)
+        response = requests.get(forward_url, headers=headers, params=query_params, timeout=100)
     elif request.method == 'POST':
         response = requests.post(forward_url, headers=headers, json=request.json)
     elif request.method == 'PUT':
